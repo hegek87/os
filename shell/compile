@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [[ "$1" = "r" ]]; then
+	make
+fi
+
+if [[ $? -eq 0 ]]; then
+	./objects/shell
+fi
