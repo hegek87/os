@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [[ "$1" == "r" ]]; then
+	make
+	if [[ -z "$2" ]]; then
+		./objects/file_comp .
+	else
+		./objects/file_comp "$2"
+	fi
+else
+	if [[ "$1" = "y" ]]; then
+		if [[ -z "$2" ]]; then
+			gdb ./objects/file_comp .
+		else
+			gdb ./objects/file_comp "$2"
+		fi
+	else
+		if [[ -z "$1" ]]; then
+			./objects/file_comp .
+		else
+			./objects/file_comp "$1"
+		fi
+	fi
+fi
