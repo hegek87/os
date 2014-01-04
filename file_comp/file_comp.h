@@ -9,6 +9,6 @@ struct file_data{
 };
 
 void usage(void);
-int process(struct stack *);
+int process(char *);
 
 #endif

@@ -9,7 +9,7 @@
 
 #include "file_comp.h"
 
-//static struct stack *to_visit;
+static struct stack *to_visit;
 static struct dl_list *visited;
 
 void usage(void){
@@ -17,10 +17,10 @@ void usage(void){
 }
 
 //0 is success, 1 is link, '.', or '..', -1 is error
-int process(struct stack *to_visit){
+int process(char *path){
 	struct stat cur_obj;
 	printf("Stack size: %d\n", stack_size(to_visit));
-	char *path = (char *)(pop(to_visit)->data);
+	//char *path = (char *)(pop(to_visit)->data);
 	printf("Statting: %s\n", path);
 	if(lstat(path, &cur_obj)){
 		//printf("\n\n%s\n", path);
@@ -110,32 +110,29 @@ int process(struct stack *to_visit){
 
 int main(int argc, char **argv){
 
-/*
-	struct stack *to_visit = create_stack();
+
+	to_visit = create_stack();
 	visited = create_empty_list();
-	//struct stat cur_obj;
 	char *path = NULL;
 	if(argc > 2 || argc < 1){
 		usage();
-		return -1;
+		exit(-1);
 	}
 	//start search at specified directory
 	if(argc == 2){
 		path = *(argv+1);
-		//printf("%s\n", path);
-		push_key(to_visit, (void *)path);
-		//char *x = (char *)(pop(to_visit)->data);
-		//printf("%s\n", x);
 	}
 	//start search at current working directory
 	else{
-		push_key(to_visit, ".");
+		*path = '.';
 	}
 	
+	push_key(to_visit, path);
+	
 	while(!is_stack_empty(to_visit)){
-		//char *cur = (char *)(pop(to_visit)->data);
+		char *cur = (char *)(pop(to_visit)->data);
 		//printf("Popped: %s\n", cur);
-		if(process(to_visit)==-1){
+		if(process(cur)==-1){
 			exit(-1);
 		}
 	}
@@ -144,7 +141,8 @@ int main(int argc, char **argv){
 		
 	is_empty(visited);
 	//printf("HI\n");
-	*/
+	
+	/*
 	char *path = "objects/";
 	struct stat t;
 	if(lstat(path, &t)){
@@ -152,6 +150,7 @@ int main(int argc, char **argv){
 		printf("%d\n", errno);
 	}
 	printf("SUCCESS\n");
+	*/
 	/*
 	if(argc != 3){
 		perror("Include 3 args\n");
