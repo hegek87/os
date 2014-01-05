@@ -10,6 +10,7 @@ struct file_data{
 	char *file;
 };
 
+int visit(struct file_data *);
 void usage(void);
 int process(char *);
 int walk_dir(char *);

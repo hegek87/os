@@ -12,33 +12,49 @@
 
 #include "file_comp.h"
 
-#define MD5_PATH "md5/md5-app/md5"
+#define MD5_PATH "objects/md5"
 
 static struct stack *to_visit;
+//dl_list where the nodes contain dl_lists
 static struct dl_list *visited;
 
 void usage(void){
 	printf("./file_comp <directory-name>\n");
 }
+/*
+ We have a list of lists, if an element is found, insert it into it's 
+ containing list. Otherwise add it to a list, and add the list to visited
+ Return 1 if added new sublist
+ If found and inserted, return 0
+*/
+int visit(struct file_data *cur){
+	struct dl_list *cur_node = visited->head;
+	//list is empty, value can't be found
+	if(!cur_node){
+		struct dl_list *temp = create_empty_list();
+		insert_el_head(temp, cur);
+		insert_el_head(visited, temp);
+		return 1;
+	}
+}
 
 struct file_data *compute_hash(char **cmd){
-	int pipe_fd[2], status;
+	int pipe_fd[2];
 	char *digest = calloc(HASH_SIZE, sizeof(char));
-	struct file_data *cur_hash = malloc(sizeof(struct file_data));
-	cur_hash->file = cmd[1];
-	pid_t cpid = fork();
 	
 	if(pipe(pipe_fd) == -1){
 		perror("Pipe error\n");
-		free(cur_hash);
-		free(digest);
 		return NULL;
 	}
+	
+	struct file_data *cur_hash = malloc(sizeof(struct file_data));
+	cur_hash->file = cmd[1];
+	pid_t cpid = fork();
+	int status;
 	
 	if(cpid == -1){
 		perror("Fork failure\n");
 		free(cur_hash);
-		free(digest);
 		return NULL;
 	}
 	
@@ -56,6 +72,7 @@ struct file_data *compute_hash(char **cmd){
 		int i = 0;
 		close(pipe_fd[1]);
 		while(read(pipe_fd[0], &buf, 1) > 0 && i < HASH_SIZE){
+			//printf("%d. BUF: %c\n", (i+1), buf);
 			digest[i] = buf;
 			++i;
 		}
@@ -134,7 +151,7 @@ int main(int argc, char **argv){
 	visited = create_empty_list();
 	
 	char *path = NULL;
-	if(argc > 2 || argc < 1){
+	if(argc > 2){
 		usage();
 		exit(-1);
 	}
