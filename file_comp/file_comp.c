@@ -15,71 +15,67 @@ static struct dl_list *visited;
 void usage(void){
 	printf("./file_comp <directory-name>\n");
 }
+//-1 is an error, 0 is success
+int walk_dir(char *path){
+	DIR *cd;
+	struct dirent *dirp;
+	if(!(cd = opendir(path))){
+		printf("Error opening %s\n", path);
+		return -1;
+	}
+	while((dirp = readdir(cd))){
+		//skip '.'
+		if(!strcmp(dirp->d_name, ".")){
+			continue;
+		}
+		//skip '..'
+		if(!strcmp(dirp->d_name, "..")){
+			continue;
+		}
+		if(!strcmp(path, "/")){
+			int p_len = strlen(dirp->d_name) + 2;
+			char *new_path = calloc(p_len, sizeof(char));
+			strcpy(new_path, path);
+			strcat(new_path, dirp->d_name);
+			push_key(to_visit, new_path);
+		}
+		else if(strcmp(path, ".") || strcmp(path, "..")){
+			int p_len = strlen(path) + strlen(dirp->d_name)+2;
+			char *new_path = calloc(p_len, sizeof(char));
+			strcpy(new_path, path);
+			strcat(new_path, "/");
+			strcat(new_path, dirp->d_name);
+			push_key(to_visit, new_path);
+		}
+		else{
+			push_key(to_visit, dirp->d_name);
+		}
+	}
+	closedir(cd);
+	return 0;	
+}
 
 //0 is success, -1 is error
 int process(char *path){
 	struct stat cur_obj;
-	//printf("Stack size: %d\n", stack_size(to_visit));
-	//char *path = (char *)(pop(to_visit)->data);
-	//printf("Statting: %s\n", path);
 	if(lstat(path, &cur_obj)){
-		//printf("\n\n%s\n", path);
 		perror("Failed to stat object\n");
 		return -1;
 	}
-	mode_t x = cur_obj.st_mode & S_IFMT;
-	if(x == S_IFLNK){
-		//printf("Is Link\n");
+	mode_t x = cur_obj.st_mode;
+	if(S_ISLNK(x)){
 		return 1;
 	}
-	else if(x == S_IFDIR){
-		DIR *cd;
-		struct dirent *dirp;
-		if(!(cd = opendir(path))){
-			printf("Error opening %s\n", path);
-			return -1;
-		}
-		//printf("Found Directory\n");
-		//printf("Opening: %s\n", path);
-		while((dirp = readdir(cd))){
-			//skip .
-			if(!strcmp(dirp->d_name, ".")){
-				//printf("Found '.'\n");
-				continue;
-			}
-			//skip ..
-			if(!strcmp(dirp->d_name, "..")){
-				//printf("Found '..'\n");
-				continue;
-			}
-			if(strcmp(path, ".") || strcmp(path, "..")){
-				int p_len = strlen(path) + strlen(dirp->d_name)+2;
-				char *new_path = calloc(p_len, sizeof(char));
-				strcpy(new_path, path);
-				strcat(new_path, "/");
-				strcat(new_path, dirp->d_name);
-				//printf("Pushing: %s\n", new_path);
-				push_key(to_visit, new_path);
-			}
-			else{
-				//printf("Pushing: %s\n", dirp->d_name);
-				push_key(to_visit, dirp->d_name);
-			}
-			//printf("Stack size: %d\n", stack_size(to_visit));
-		}
-		closedir(cd);		
+	else if(S_ISDIR(x)){
+		walk_dir(path);		
 	}
 	else{
-		//printf("Found File\n");
-		//printf("%s\n", path);
 		insert_el_head(visited, path);
 	}
 	return 0;
 }
 
 int main(int argc, char **argv){
-
-
 	to_visit = create_stack();
 	visited = create_empty_list();
 	
@@ -92,7 +88,7 @@ int main(int argc, char **argv){
 	if(argc == 2){
 		path = *(argv+1);
 	}
-	//start search at current working directory
+	//start search at current working directory (default behavior)
 	else{
 		path = ".";
 	}
@@ -110,7 +106,7 @@ int main(int argc, char **argv){
 	int i;
 	struct node *runner = visited->head;
 	for(i = 0; i < visited->size; ++i){
-		printf("%s\n", (char *)runner->data);
+		printf("%d. %s\n", (i+1), (char *)runner->data);
 		runner = runner->next;
 	}
 	return 0;

@@ -10,5 +10,6 @@ struct file_data{
 
 void usage(void);
 int process(char *);
+int walk_dir(char *);
 
 #endif
