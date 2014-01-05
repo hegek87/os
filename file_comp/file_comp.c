@@ -115,6 +115,77 @@ int main(int argc, char **argv){
 
 	to_visit = create_stack();
 	visited = create_empty_list();
+	char *path = "test";
+	DIR *cd;
+	struct dirent *dirp;
+	struct stat c;
+	lstat(path, &c);
+	mode_t x = c.st_mode;
+	if(S_ISDIR(x)){
+		cd = opendir(path);
+		dirp = readdir(cd);
+		if(!strcmp(dirp->d_name, ".")){
+		}
+		else if(!strcmp(dirp->d_name, "..")){
+		}
+		else if(strcmp(path, ".")){
+			//build path
+			int p_len = strlen(path)+strlen(dirp->d_name)+2;
+			char *new_path[p_len+1];
+			strcpy(new_path, path);
+			strcat(new_path, "/");
+			strcat(new_path, dirp->d_name);
+			push_key(to_visit, new_path);
+			printf("Pushed: %s\n", new_path);
+		}
+		else{
+			push_key(to_visit, dirp->d_name);
+		}
+		char *x = (char *)(pop(to_visit)->data);
+		printf("145. AFTER: %s\n", x);
+		dirp = readdir(cd);
+		if(!strcmp(dirp->d_name, ".")){
+		}
+		else if(!strcmp(dirp->d_name, "..")){
+		}
+		else if(strcmp(path, ".")){
+			//build path
+			int p_len = strlen(path)+strlen(dirp->d_name)+2;
+			char *new_path[p_len+1];
+			strcpy(new_path, path);
+			strcat(new_path, "/");
+			strcat(new_path, dirp->d_name);
+			push_key(to_visit, new_path);
+			printf("Pushed: %s\n", new_path);
+		}
+		else{
+			push_key(to_visit, dirp->d_name);
+		}
+		x = (char *)(pop(to_visit)->data);
+		printf("165. AFTER: %s\n", x);
+		dirp = readdir(cd);
+		if(!strcmp(dirp->d_name, ".")){
+		}
+		else if(!strcmp(dirp->d_name, "..")){
+		}
+		else if(strcmp(path, ".")){
+			//build path
+			int p_len = strlen(path)+strlen(dirp->d_name)+2;
+			char *new_path[p_len+1];
+			strcpy(new_path, path);
+			strcat(new_path, "/");
+			strcat(new_path, dirp->d_name);
+			push_key(to_visit, new_path);
+			printf("Pushed: %s\n", new_path);
+		}
+		else{
+			push_key(to_visit, dirp->d_name);
+		}
+		x = (char *)(pop(to_visit)->data);
+		printf("185. AFTER: %s\n", x);
+	}
+		
+	/*
 	char *path = NULL;
 	if(argc > 2 || argc < 1){
 		usage();
@@ -129,7 +200,8 @@ int main(int argc, char **argv){
 		//path = calloc(2, sizeof(char));
 		path = ".";
 	}
-	
+	*/
+	/*
 	push_key(to_visit, path);
 	//char *cur;
 	while(!is_stack_empty(to_visit)){
@@ -178,6 +250,48 @@ int main(int argc, char **argv){
 			printf("Not a Directory\n");
 		}
 	}
+	*/
+	/*
+	path = "test";
+	struct stat cur_obj;
+	if(lstat(path, &cur_obj)){
+		perror("FAILED TO STAT\n");
+		exit(-1);
+	}
+	mode_t x = cur_obj.st_mode;
+	if(S_ISDIR(x)){
+		DIR *cd;
+		struct dirent *dirp;
+		if(!(cd = opendir(path))){
+			perror("FAILED TO OPEN\n");
+			exit(-1);
+		}
+		while((dirp = readdir(cd))){
+			printf("Name: %s\n", dirp->d_name);
+			if(!strcmp(dirp->d_name, ".")){
+				continue;
+			}
+			if(!strcmp(dirp->d_name, "..")){
+				continue;
+			}
+			if(strcmp(path, ".")){
+				//build path
+				int p_len = strlen(path)+strlen(dirp->d_name)+2;
+				char *new_path[p_len+1];
+				strcpy(new_path, path);
+				strcat(new_path, "/");
+				strcat(new_path, dirp->d_name);
+				push_key(to_visit, new_path);
+				printf("Pushed: %s\n", new_path);
+			}
+			else{
+				push_key(to_visit, dirp->d_name);
+			}
+		}
+	}
+	char *a = (char *)(pop(to_visit)->data);
+	printf("DATA: %s\n", a);
+	*/
 	
 	/*
 	while(!is_stack_empty(to_visit)){
@@ -205,9 +319,9 @@ int main(int argc, char **argv){
 		perror("FAILED\n");
 	}
 	*/
-	printf("Done processing. Stack size: %d\n", stack_size(to_visit));
+	//printf("Done processing. Stack size: %d\n", stack_size(to_visit));
 		
-	is_empty(visited);
+	//is_empty(visited);
 	//printf("HI\n");
 	
 	/*
