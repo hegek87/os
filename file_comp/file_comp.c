@@ -6,8 +6,13 @@
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 
 #include "file_comp.h"
+
+#define MD5_PATH "md5/md5-app/md5"
 
 static struct stack *to_visit;
 static struct dl_list *visited;
@@ -15,6 +20,52 @@ static struct dl_list *visited;
 void usage(void){
 	printf("./file_comp <directory-name>\n");
 }
+
+struct file_data *compute_hash(char **cmd){
+	int pipe_fd[2], status;
+	char *digest = calloc(HASH_SIZE, sizeof(char));
+	struct file_data *cur_hash = malloc(sizeof(struct file_data));
+	cur_hash->file = cmd[1];
+	pid_t cpid = fork();
+	
+	if(pipe(pipe_fd) == -1){
+		perror("Pipe error\n");
+		free(cur_hash);
+		free(digest);
+		return NULL;
+	}
+	
+	if(cpid == -1){
+		perror("Fork failure\n");
+		free(cur_hash);
+		free(digest);
+		return NULL;
+	}
+	
+	//child process
+	if(!cpid){
+		close(pipe_fd[0]);
+		dup2(pipe_fd[1], 1); //redirect stdout (1) to the pipe
+		//compute hash, write to pipe
+		execvp(cmd[0], cmd);
+		close(pipe_fd[1]);
+	}
+	else{
+		char buf;
+		//read hash
+		int i = 0;
+		close(pipe_fd[1]);
+		while(read(pipe_fd[0], &buf, 1) > 0 && i < HASH_SIZE){
+			digest[i] = buf;
+			++i;
+		}
+		close(pipe_fd[0]);
+		wait(&status);
+	}
+	cur_hash->digest = digest;
+	return cur_hash;
+}
+
 //-1 is an error, 0 is success
 int walk_dir(char *path){
 	DIR *cd;
@@ -70,6 +121,9 @@ int process(char *path){
 		walk_dir(path);		
 	}
 	else{
+		char *p_cmd[3] = { MD5_PATH, (char *)path, (char *)NULL };
+		struct file_data *t = compute_hash(p_cmd);
+		printf("%s\n", t->digest);
 		insert_el_head(visited, path);
 	}
 	return 0;
@@ -109,5 +163,6 @@ int main(int argc, char **argv){
 		printf("%d. %s\n", (i+1), (char *)runner->data);
 		runner = runner->next;
 	}
+	
 	return 0;
 }
