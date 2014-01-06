@@ -21,40 +21,77 @@ static struct dl_list *visited;
 void usage(void){
 	printf("./file_comp <directory-name>\n");
 }
+
+void print_results(void){
+	int i;
+	struct node *runner = visited->head;
+	for(i = 0; i < visited->size; ++i){
+		struct file_data *temp = (struct file_data *)(runner->data);
+		printf("HASH: %s\n", temp->digest);
+		struct node *cur_node = temp->files->head;
+		int j;
+		printf("Total matches: %d\n", temp->files->size);
+		printf("FILES:\n");
+		for(j = 0; j < temp->files->size; ++j){
+			printf("\t%s\n", (char *)(cur_node->data));
+			cur_node = cur_node->next;
+		}
+		printf("\n");
+		runner = runner->next;
+	}
+	return;
+}
+	
 /*
  We have a list of lists, if an element is found, insert it into it's 
  containing list. Otherwise add it to a list, and add the list to visited
  Return 1 if added new sublist
  If found and inserted, return 0
 */
-int visit(struct file_data *cur){
-	struct dl_list *cur_node = visited->head;
+int visit(char *digest, char *file_name){
+	struct node *cur_node = visited->head;
 	//list is empty, value can't be found
 	if(!cur_node){
-		struct dl_list *temp = create_empty_list();
-		insert_el_head(temp, cur);
+		struct file_data *temp = malloc(sizeof(struct file_data));
+		temp->digest = digest;
+		struct dl_list *file_list = create_empty_list();
+		insert_el_head(file_list, file_name);
+		temp->files = file_list;
 		insert_el_head(visited, temp);
 		return 1;
 	}
+	while(cur_node){
+		struct file_data *temp = (struct file_data *)(cur_node->data);
+		if(!strcmp(digest, (char *)(temp->digest))){
+			insert_el_head((struct dl_list *)(temp->files),file_name);
+			return 0;
+		}
+		cur_node = cur_node->next;
+	}
+	//key not found, insert new element
+	struct file_data *temp = malloc(sizeof(struct file_data));
+	temp->digest = digest;
+	struct dl_list *file_list = create_empty_list();
+	insert_el_head(file_list, file_name);
+	temp->files = file_list;
+	insert_el_head(visited, temp);
+	return 1;
 }
 
-struct file_data *compute_hash(char **cmd){
+char *compute_hash(char **cmd){
 	int pipe_fd[2];
 	char *digest = calloc(HASH_SIZE, sizeof(char));
 	
 	if(pipe(pipe_fd) == -1){
-		perror("Pipe error\n");
+		perror("Pipe error");
 		return NULL;
 	}
 	
-	struct file_data *cur_hash = malloc(sizeof(struct file_data));
-	cur_hash->file = cmd[1];
 	pid_t cpid = fork();
 	int status;
 	
 	if(cpid == -1){
-		perror("Fork failure\n");
-		free(cur_hash);
+		perror("Fork failure");
 		return NULL;
 	}
 	
@@ -79,8 +116,7 @@ struct file_data *compute_hash(char **cmd){
 		close(pipe_fd[0]);
 		wait(&status);
 	}
-	cur_hash->digest = digest;
-	return cur_hash;
+	return digest;
 }
 
 //-1 is an error, 0 is success
@@ -139,9 +175,10 @@ int process(char *path){
 	}
 	else{
 		char *p_cmd[3] = { MD5_PATH, (char *)path, (char *)NULL };
-		struct file_data *t = compute_hash(p_cmd);
-		printf("%s\n", t->digest);
-		insert_el_head(visited, path);
+		char *hash = compute_hash(p_cmd);
+		visit(hash, (char *)path);
+		//printf("%s\n", hash);
+		//insert_el_head(visited, path);
 	}
 	return 0;
 }
@@ -173,13 +210,8 @@ int main(int argc, char **argv){
 		}
 	}
 	
-	printf("Visited empty? %d\n", is_empty(visited));
-	int i;
-	struct node *runner = visited->head;
-	for(i = 0; i < visited->size; ++i){
-		printf("%d. %s\n", (i+1), (char *)runner->data);
-		runner = runner->next;
-	}
+	print_results();
+	
 	
 	return 0;
 }

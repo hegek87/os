@@ -7,13 +7,14 @@
 
 struct file_data{
 	char *digest;
-	char *file;
+	struct dl_list *files;
 };
 
-int visit(struct file_data *);
+int visit(char *, char *);
 void usage(void);
 int process(char *);
 int walk_dir(char *);
-struct file_data *compute_hash(char **);
+char *compute_hash(char **);
+void print_results(void);
 
 #endif
