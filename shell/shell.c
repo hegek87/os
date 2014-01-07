@@ -7,8 +7,11 @@
 #include <errno.h>
 #include <stdlib.h>
 
-
-#define BUFFER_SIZE 4096
+#define RESET_COLOR 	"\033[0m"
+#define GREEN		"\e[1;32m"
+#define BLUE		"\e[1;34m"
+#define RED			"\e[1;31m"
+#define BUFFER_SIZE 	4096
 
 int process_cmd(char **);
 void print_prompt(void);
@@ -79,7 +82,8 @@ void print_prompt(void){
 		perror("Failed to get working directory.");
 		exit(-1);
 	}
-	printf("%s@%s %s %% ", user_data->pw_name, host, c_dir);
+	printf(GREEN "%s@%s " BLUE "%s $ " RESET_COLOR,
+				 user_data->pw_name, host, c_dir);
 }	
 
 void parse_command(char *parsed_cmd[], char *command){
