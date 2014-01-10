@@ -4,4 +4,5 @@ all:
 	
 	gcc -o ./objects/my_ls -g -Wall double_linked_list.o my_ls.o
 	
-	rm -f *.o
+	mv my_ls.o ./objects
+	mv double_linked_list.o ./objects
