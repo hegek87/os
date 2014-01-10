@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$1" == "r" ]]; then
+if [[ "$1" = "r" ]]; then
 	make
 	if [[ -z "$2" ]]; then
 		./objects/file_comp 

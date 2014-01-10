@@ -18,6 +18,7 @@ typedef void *threadpool;
 
 // "dispatch_fn" declares a typed function pointer.  A
 // variable of type "dispatch_fn" points to a function
+
 // with the following signature:
 // 
 //     void dispatch_function(void *arg);

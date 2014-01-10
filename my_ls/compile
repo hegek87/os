@@ -1,0 +1,22 @@
+#!/bin/bash
+
+
+#make the file
+if [[ "$1" = "r" ]]; then
+	make
+fi
+
+#Run the file
+if [[  $? -eq 0 ]]; then
+	if [[ -z "$2" ]]; then
+		if [[ "$2" = "m" ]]; then
+			valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./objects/my_ls
+		elif [[ "$2" = "y" ]]; then
+			gdb ./objects/my_ls
+		else
+			./objects/my_ls $2
+		fi
+	else
+		./objects/my_ls
+	fi
+fi

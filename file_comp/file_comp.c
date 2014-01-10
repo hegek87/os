@@ -98,7 +98,7 @@ char *compute_hash(char **cmd){
 	//child process
 	if(!cpid){
 		close(pipe_fd[0]);
-		dup2(pipe_fd[1], 1); //redirect stdout (1) to the pipe
+		dup2(pipe_fd[1], STDOUT_FILENO); //redirect stdout to the pipe
 		//compute hash, write to pipe
 		execvp(cmd[0], cmd);
 		close(pipe_fd[1]);
