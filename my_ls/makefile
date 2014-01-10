@@ -3,3 +3,5 @@ all:
 	gcc -c -g -Wall my_ls.c
 	
 	gcc -o ./objects/my_ls -g -Wall double_linked_list.o my_ls.o
+	
+	rm -f *.o
