@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "my_ls.h"
 
-int process_path(char *path){
+int process_path(char *path, char flag){
 	DIR *cd;
 	struct dirent *dirp;
 	struct stat c_obj;
@@ -17,14 +17,8 @@ int process_path(char *path){
 		perror("Failed to open directory");
 		return -1;
 	}
-	//printf("OPENED DIR\n");
 	while((dirp = readdir(cd))){
-		//printf("READING DIR\n");
-		if(!strcmp(dirp->d_name, ".") 
-			|| !strcmp(dirp->d_name, "..")
-			|| dirp->d_name[0] == '.'){
-			continue;
-		}
+		if(dirp->d_name[0] == '.' && (flag - 'a')){ continue; }
 		int p_len = strlen(dirp->d_name) + strlen(path)+2;
 		char *new_path = calloc(p_len, sizeof(char));
 		strcpy(new_path, path);
@@ -38,9 +32,7 @@ int process_path(char *path){
 		if(S_ISDIR(x)){
 			printf(BLUE "%-11s" RESET, dirp->d_name);
 		}
-		else if((x & S_IXUSR) != 0 
-				|| (x & S_IXOTH) != 0 
-				|| (x & S_IXGRP) != 0){
+		else if((x & S_IXUSR) || (x & S_IXOTH) || (x & S_IXGRP)){
 			printf(GREEN "%-11s" RESET, dirp->d_name);
 		}
 		else{
@@ -61,12 +53,9 @@ int main(int argc, char **argv){
 	else{
 		path = ".";
 	}
-	//printf("PATH: %s\n", path);
-	//if(no flags){
-	if(process_path(path)){
+	if(process_path(path, 'a')){
 		perror("Failed to process directory");
 		exit(-1);
 	}
-	//}
 	return 0;
 }
