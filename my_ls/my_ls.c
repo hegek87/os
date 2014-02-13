@@ -45,15 +45,36 @@ int process_path(char *path, char flag){
 
 int main(int argc, char **argv){
 	char *path;
+	int c;
+	char options;
 	
-	//no flag support yet
-	if(argc == 2){
-		path = *(argv + 1);
+	// cmd arg and file specified
+	if(argc > 2){
+		while((c = getopt(argc, argv, FLAGS)) != -1){
+			switch(c){
+				case 'a':
+				options = 'a';
+			}
+		}
+		path = *(argv + (argc - 1));
 	}
 	else{
-		path = ".";
+		while((c = getopt(argc, argv, FLAGS)) != -1){
+			switch(c){
+				case 'a':
+				options = 'a';
+			}
+		}
+		if(options == 'a'){
+			path = ".";
+		}
+		else{
+			path = *(argv+1) ? *(argv+1) : ".";
+		}
 	}
-	if(process_path(path, 'a')){
+			
+	
+	if(process_path(path, options)){
 		perror("Failed to process directory");
 		exit(-1);
 	}

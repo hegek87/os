@@ -7,5 +7,7 @@
 #define BLUE "\e[1;34m"
 #define RESET "\e[0m"
 
+const char *FLAGS = "a";
+
 int process_path(char *, char);
 #endif
